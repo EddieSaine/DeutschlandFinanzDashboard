@@ -1,10 +1,8 @@
-# DeutschlandFinanzDashboard
-
 # 🇩🇪 Bundesfinanzen & Makro-Dashboard 2026
 
 > Eine moderne, interaktive Web-Anwendung zur visuellen Analyse des deutschen Bundeshaushalts, der Schuldenquote, der Zinslast und demografischer Risikofaktoren.
 
-![Dashboard Vorschau]https://imgur.com/a/OFWLLxK
+<img width="1323" alt="Dashboard Vorschau" src="https://github.com/user-attachments/assets/9bea5b69-ef2c-43de-9e36-15e1585bb49e" />
 
 ---
 
@@ -23,20 +21,12 @@ Das Dashboard unterteilt sich in 6 logische Analyseeinheiten:
 ---
 
 ## 🛠️ Tech Stack
-* **HTML5** & **CSS3** (Modernes CSS Grid, Flexbox, Custom Properties / CSS-Variablen)
-* **JavaScript (Vanilla)** (Keine schweren Frameworks oder externen Dependencies, pure Performance)
-* **Hosting:** Vercel (Automatisierte Deployments via GitHub)
+- **HTML5** & **CSS3** (Modernes CSS Grid, Flexbox, Custom Properties / CSS-Variablen)
+- **JavaScript (Vanilla)** (Keine schweren Frameworks oder externen Dependencies, pure Performance)
+- **Hosting:** Vercel (Automatisierte Deployments via GitHub)
 
 ---
 
 ## 🚀 Live-Demo
 Schau dir das Projekt hier live an:  
 👉 **https://deutschlandfinanzdashboard.vercel.app**
-
----
-
-## 💡 Wie man das Projekt lokal startet
-Da es sich um eine reine Frontend-Anwendung handelt, ist keine Installation von Node.js oder Datenbanken nötig:
-1. Repository klonen oder als ZIP herunterladen:
-   ```bash
-   git clone [https://github.com/dein-benutzername/dein-repo-name.git](https://github.com/dein-benutzername/dein-repo-name.git)

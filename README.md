@@ -4,7 +4,7 @@
 
 > Eine moderne, interaktive Web-Anwendung zur visuellen Analyse des deutschen Bundeshaushalts, der Schuldenquote, der Zinslast und demografischer Risikofaktoren.
 
-![Dashboard Vorschau](https://imgur.com/a/OFWLLxK) 
+![Dashboard Vorschau]https://imgur.com/a/OFWLLxK
 
 ---
 

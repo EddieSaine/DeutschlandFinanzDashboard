@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deutschland Finanz-Dashboard | Einnahmen & Ausgaben</title>
+    <style>
+        :root {
+            --bg-color: #090d16;
+            --card-bg: #111827;
+            --card-border: #1f2937;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --accent-in: #10b981;
+            --accent-out: #ef4444;
+            --accent-blue: #38bdf8;
+            --accent-warn: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 24px; display: flex; justify-content: center; }
+        .dashboard { max-width: 1200px; width: 100%; display: flex; flex-direction: column; gap: 20px; }
+
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--card-bg); padding: 20px 24px; border-radius: 16px;
+            border: 1px solid var(--card-border); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            flex-wrap: wrap; gap: 15px;
+        }
+        .header-title { display: flex; align-items: center; gap: 12px; }
+        .flag-icon { width: 32px; height: 22px; border-radius: 4px; object-fit: cover; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .header-title h1 { font-size: 1.4rem; font-weight: 700; }
+        .subtitle { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; }
+
+        /* Key Metrics Row */
+        .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        @media (max-width: 768px) { .metrics-grid { grid-template-columns: 1fr; } }
+
+        .metric-card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            padding: 18px 20px; border-radius: 14px; display: flex; flex-direction: column; gap: 6px;
+        }
+        .metric-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .metric-value { font-size: 1.8rem; font-weight: 800; }
+
+        /* Main Grid: Split Einnahmen & Ausgaben */
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+        .card { 
+            background: var(--card-bg); border-radius: 16px; border: 1px solid var(--card-border); 
+            padding: 24px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            display: flex; flex-direction: column; gap: 18px;
+        }
+
+        .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; }
+        .card-title { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+
+        /* Flow Bars */
+        .item-list { display: flex; flex-direction: column; gap: 14px; }
+        .item-row { display: flex; flex-direction: column; gap: 6px; }
+        .item-meta { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; }
+        .item-val { font-weight: 700; }
+
+        .bar-bg { width: 100%; height: 8px; background: #1f2937; border-radius: 4px; overflow: hidden; position: relative; }
+        .bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
+        .fill-in { background: var(--accent-in); box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+        .fill-out { background: var(--accent-out); box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+
+        /* Interactive Slider Group */
+        .slider-box { background: #0d131f; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--card-border); }
+        input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; background: #1f2937; border-radius: 2px; outline: none; margin-top: 6px; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent-blue); cursor: pointer;
+        }
+
+        .badge-status { font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; }
+        .bg-ok { background: rgba(16, 185, 129, 0.15); color: var(--accent-in); border: 1px solid rgba(16, 185, 129, 0.4); }
+        .bg-warn { background: rgba(239, 68, 68, 0.15); color: var(--accent-out); border: 1px solid rgba(239, 68, 68, 0.4); }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <header>
+        <div class="header-title">
+            <img src="https://flagcdn.com/w40/de.png" class="flag-icon" alt="DE">
+            <div>
+                <h1>Bundesfinanzen Deutschland</h1>
+                <div class="subtitle">Interaktive Analyse des Bundeshaushalts (~488 Mrd. €)</div>
+            </div>
+        </div>
+        <span id="budget-status" class="badge-status bg-warn">Strukturelles Defizit</span>
+    </header>
+
+    <!-- Top Key Figures -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <span class="metric-label">Gesamteinnahmen (Soll)</span>
+            <span class="metric-value" id="total-in-text" style="color: var(--accent-in);">488.5 Mrd. €</span>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Gesamtausgaben (Soll)</span>
+            <span class="metric-value" id="total-out-text" style="color: var(--accent-out);">488.5 Mrd. €</span>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Nettokreditaufnahme (Neuverschuldung)</span>
+            <span class="metric-value" id="deficit-text" style="color: var(--accent-warn);">28.1 Mrd. €</span>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- EINNAHMEN PANEL -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title" style="color: var(--accent-in);">
+                    <span>↓ Woher kommt das Geld?</span>
+                </div>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Steuern & Abgaben</span>
+            </div>
+
+            <div class="item-list">
+                <div class="slider-box">
+                    <div class="item-meta">
+                        <span>Umsatzsteuer / Mehrwertsteuer</span>
+                        <span class="item-val" id="val-in-vat">125.0 Mrd. €</span>
+                    </div>
+                    <div class="bar-bg"><div class="bar-fill fill-in" id="bar-in-vat" style="width: 25.5%;"></div></div>
+                    <input type="range" id="slider-vat" min="80" max="180" value="125" oninput="calculate()">
+                </div>
+
+                <div class="slider-box">
+                    <div class="item-meta">
+                        <span>Lohn- & Einkommensteuer</span>
+                        <span class="item-val" id="val-in-income">112.0 Mrd. €</span>
+                    </div>
+                    <div class="bar-bg"><div class="bar-fill fill-in" id="bar-in-income" style="width: 23%;"></div></div>
+                    <input type="range" id="slider-income" min="70" max="160" value="112" oninput="calculate()">
+                </div>
+
+                <div class="slider-box">
+                    <div class="item-meta">
+                        <span>Energiesteuer & CO2-Abgaben</span>
+                        <span class="item-val" id="val-in-energy">41.0 Mrd. €</span>
+                    </div>
+                    <div class="bar-bg"><div class="bar-fill fill-in" id="bar-in-energy" style="width: 8.4%;"></div></div>
+                    <input type="range" id="slider-energy" min="20" max="70" value="41" oninput="calculate()">
+                </div>
+
+                <div class="slider-box">
+                    <div class="item-meta">
+                        <span>Körperschaftsteuer (Unternehmen)</span>
+                        <span class="item-val" id="val-in-corp">32.0 Mrd. €</span>
+                    </div>
+                    <div class="bar-bg"><div class="bar-fill fill-in" id="bar-in-corp" style="width: 6.5%;"></div></div>
+                    <input type="range" id="slider-corp" min="15" max="60" value="32" oninput="calculate()">
+                </div>
+
+                <div class="slider-box">
+                    <div class="item-meta">
+                        <span>Sonstige Einnahmen & Gebühren</span>
+                        <span class="item-val" id="val-in-other">150.4 Mrd. €</span>
+                    </div>
+                    <div class="bar-bg"><div class="bar-fill fill-in" id="bar-in-other" style="width: 30.8%;"></div></div>
+                    <input type="range" id="slider-in-other" min="100" max="200" value="150.4" step="0.5" oninput="calculate()">
+                </div>
+            </div>
+        </div>
+
+        <!-- AUSGABEN PANEL -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title" style="color: var(--accent-out);">
+                    <span>↑ Wohin fließt das Geld?</span>
+                </div>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Bundesministerien</span>
+            </div>
+
+            <div class="item-list">
+                <div class="slider-box">
+                    <div class="item-meta">
+                        <span>Arbeit & Soziales (Rente, Bürgergeld)</span>
+                        <span class="item-val" id="val-out-social">175.7 Mrd. €</span>
+                    </div>
+                    <div class="bar-bg"><div class="bar-fill fill-out" id="bar-out-social" style="width: 36%;"></div></div>
+                    <input type="range" id="slider-social" min="120" max="240" value="175.7" step="0.5" oninput="calculate()">
+                </div>
+
+                <div class="slider-box">
+                    <div class="item-meta">
+                        <span>Verteidigung (Bundeswehr)</span>
+                        <span class="item-val" id="val-out-defense">52.0 Mrd. €</span>
+                    </div>
+                    <div class="bar-bg"><div class="bar-fill fill-out" id="bar-out-defense" style="width: 10.6%;"></div></div>
+                    <input type="range" id="slider-defense" min="30" max="100" value="52" oninput="calculate()">
+                </div>
+
+                <div class="slider-box">
+                    <div class="item-meta">
+                        <span>Zinsausgaben (Bundesschuld)</span>
+                        <span class="item-val" id="val-out-debt">37.5 Mrd. €</span>
+                    </div>
+                    <div class="bar-bg"><div class="bar-fill fill-out" id="bar-out-debt" style="width: 7.6%;"></div></div>
+                    <input type="range" id="slider-debt" min="15" max="70" value="37.5" step="0.5" oninput="calculate()">
+                </div>
+
+                <div class="slider-box">
+                    <div class="item-meta">
+                        <span>Verkehr & Digitale Infrastruktur</span>
+                        <span class="item-val" id="val-out-traffic">38.7 Mrd. €</span>
+                    </div>
+                    <div class="bar-bg"><div class="bar-fill fill-out" id="bar-out-traffic" style="width: 7.9%;"></div></div>
+                    <input type="range" id="slider-traffic" min="20" max="70" value="38.7" step="0.5" oninput="calculate()">
+                </div>
+
+                <div class="slider-box">
+                    <div class="item-meta">
+                        <span>Bildung, Forschung & Gesundheit</span>
+                        <span class="item-val" id="val-out-edu">35.0 Mrd. €</span>
+                    </div>
+                    <div class="bar-bg"><div class="bar-fill fill-out" id="bar-out-edu" style="width: 7.1%;"></div></div>
+                    <input type="range" id="slider-edu" min="15" max="60" value="35" oninput="calculate()">
+                </div>
+
+                <div class="slider-box">
+                    <div class="item-meta">
+                        <span>Übrige Staatsausgaben</span>
+                        <span class="item-val" id="val-out-other">149.6 Mrd. €</span>
+                    </div>
+                    <div class="bar-bg"><div class="bar-fill fill-out" id="bar-out-other" style="width: 30.6%;"></div></div>
+                    <input type="range" id="slider-out-other" min="100" max="200" value="149.6" step="0.5" oninput="calculate()">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function calculate() {
+        // Einnahmen abfragen
+        const vat = parseFloat(document.getElementById('slider-vat').value);
+        const income = parseFloat(document.getElementById('slider-income').value);
+        const energy = parseFloat(document.getElementById('slider-energy').value);
+        const corp = parseFloat(document.getElementById('slider-corp').value);
+        const inOther = parseFloat(document.getElementById('slider-in-other').value);
+
+        const totalIn = vat + income + energy + corp + inOther;
+
+        // Ausgaben abfragen
+        const social = parseFloat(document.getElementById('slider-social').value);
+        const defense = parseFloat(document.getElementById('slider-defense').value);
+        const debt = parseFloat(document.getElementById('slider-debt').value);
+        const traffic = parseFloat(document.getElementById('slider-traffic').value);
+        const edu = parseFloat(document.getElementById('slider-edu').value);
+        const outOther = parseFloat(document.getElementById('slider-out-other').value);
+
+        const totalOut = social + defense + debt + traffic + edu + outOther;
+
+        // UI Texte Einnahmen aktualisieren
+        document.getElementById('val-in-vat').innerText = vat.toFixed(1) + ' Mrd. €';
+        document.getElementById('val-in-income').innerText = income.toFixed(1) + ' Mrd. €';
+        document.getElementById('val-in-energy').innerText = energy.toFixed(1) + ' Mrd. €';
+        document.getElementById('val-in-corp').innerText = corp.toFixed(1) + ' Mrd. €';
+        document.getElementById('val-in-other').innerText = inOther.toFixed(1) + ' Mrd. €';
+
+        // Balken Einnahmen
+        document.getElementById('bar-in-vat').style.width = (vat / totalIn * 100) + '%';
+        document.getElementById('bar-in-income').style.width = (income / totalIn * 100) + '%';
+        document.getElementById('bar-in-energy').style.width = (energy / totalIn * 100) + '%';
+        document.getElementById('bar-in-corp').style.width = (corp / totalIn * 100) + '%';
+        document.getElementById('bar-in-other').style.width = (inOther / totalIn * 100) + '%';
+
+        // UI Texte Ausgaben aktualisieren
+        document.getElementById('val-out-social').innerText = social.toFixed(1) + ' Mrd. €';
+        document.getElementById('val-out-defense').innerText = defense.toFixed(1) + ' Mrd. €';
+        document.getElementById('val-out-debt').innerText = debt.toFixed(1) + ' Mrd. €';
+        document.getElementById('val-out-traffic').innerText = traffic.toFixed(1) + ' Mrd. €';
+        document.getElementById('val-out-edu').innerText = edu.toFixed(1) + ' Mrd. €';
+        document.getElementById('val-out-other').innerText = outOther.toFixed(1) + ' Mrd. €';
+
+        // Balken Ausgaben
+        document.getElementById('bar-out-social').style.width = (social / totalOut * 100) + '%';
+        document.getElementById('bar-out-defense').style.width = (defense / totalOut * 100) + '%';
+        document.getElementById('bar-out-debt').style.width = (debt / totalOut * 100) + '%';
+        document.getElementById('bar-out-traffic').style.width = (traffic / totalOut * 100) + '%';
+        document.getElementById('bar-out-edu').style.width = (edu / totalOut * 100) + '%';
+        document.getElementById('bar-out-other').style.width = (outOther / totalOut * 100) + '%';
+
+        // Summen anzeigen
+        document.getElementById('total-in-text').innerText = totalIn.toFixed(1) + ' Mrd. €';
+        document.getElementById('total-out-text').innerText = totalOut.toFixed(1) + ' Mrd. €';
+
+        const diff = totalOut - totalIn;
+        const deficitText = document.getElementById('deficit-text');
+        const badge = document.getElementById('budget-status');
+
+        if(diff > 0) {
+            deficitText.innerText = diff.toFixed(1) + ' Mrd. €';
+            deficitText.style.color = "var(--accent-warn)";
+            badge.innerText = "Nettokreditaufnahme erforderlich";
+            badge.className = "badge-status bg-warn";
+        } else {
+            deficitText.innerText = '+' + Math.abs(diff).toFixed(1) + ' Mrd. €';
+            deficitText.style.color = "var(--accent-in)";
+            badge.innerText = "Ausgeglichener Haushalt / Überschuss";
+            badge.className = "badge-status bg-ok";
+        }
+    }
+
+    // Initialisierung
+    calculate();
+</script>
+</body>
+</html>
